@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY TO-DO LIST (Ultimate Swag)</title>
+    <!-- Google Fonts - Bebas Neue (제목), Roboto (본문) -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Ultimate Swag 컬러 팔레트 */
+            --bg-color: #121212; /* 더 어두운 배경 */
+            --container-bg: #1e1e1e; /* 컨테이너 배경색 */
+            --item-bg: #2a2a2a; /* 할 일 항목 배경색 */
+            --primary-color: #bb86fc; /* 메인 포인트색 (보라) */
+            --secondary-color: #03dac6; /* 서브 포인트색 (민트) */
+            --delete-color: #cf6679; /* 삭제 버튼색 (빨강) */
+            --edit-color: #fcd752; /* 수정 버튼색 (노랑) */
+            --text-color: #e0e0e0; /* 밝은 텍스트색 */
+            --light-text: #a9a9a9; /* 연한 텍스트색 (시간, 날짜 등) */
+            --completed-text: #7a7a7a; /* 완료 텍스트색 */
+            --border-color: #3a3a3a; /* 경계선 색 */
+            --input-bg: #2a2a2a; /* 입력 필드 배경색 */
+            --input-border: #4a4a4a; /* 입력 필드 보더 */
+            --focus-glow: #bb86fc50; /* 포커스 시 빛 효과 */
+
+            --priority-important-color: var(--delete-color); /* 중요! 빨강 */
+            --priority-high-color: #ff9800; /* 높음 주황 */
+            --priority-medium-color: #2196f3; /* 보통 파랑 */
+            --priority-low-color: #4caf50; /* 낮음 초록 */
+
+            /* 애니메이션 지속 시간 */
+            --animation-duration: 0.4s;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-color); /* 기본 배경 */
+             /* 배경 그라데이션 추가 (옵션: 패턴 넣으려면 여기 수정) */
+            background: linear-gradient(135deg, var(--bg-color) 0%, #2a1a3a 100%);
+            background-attachment: fixed; /* 배경 고정 */
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh; /* 최소 높이 설정 */
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* 그림자 더 진하게 */
+            border: 1px solid var(--border-color); /* 테두리 좀 얇게 */
+            position: relative; /* 애니메이션 기준점 */
+            overflow: hidden; /* 모서리 둥근 부분 그림자 처리 */
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 3em; /* 제목 더 크게! */
+            letter-spacing: 4px; /* 글자 간격 더 넓게! */
+            text-shadow: 0 0 5px var(--primary-color); /* 네온 효과 살짝 */
+        }
+
+        .input-area {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .input-area input[type="text"],
+        .input-area input[type="date"],
+        .input-area input[type="time"],
+        .input-area select
+         {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid var(--input-border); /* 보더 두께 */
+            border-radius: 4px;
+            min-width: 80px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; /* 포커스 애니메이션 */
+        }
+         /* 입력 필드 포커스 효과 */
+         .input-area input[type="text"]:focus,
+         .input-area input[type="date"]:focus,
+         .input-area input[type="time"]:focus,
+         .input-area select:focus {
+             outline: none; /* 기본 파란색 포커스 아웃라인 제거 */
+             border-color: var(--primary-color); /* 포커스 시 보더 색 변경 */
+             box-shadow: 0 0 8px var(--focus-glow); /* 빛 효과 */
+         }
+
+
+        .input-area input[type="time"] {
+             flex-grow: 0;
+             width: 110px;
+             flex-shrink: 0;
+        }
+         .input-area input[type="date"] {
+             flex-grow: 0;
+             width: 140px;
+             flex-shrink: 0;
+         }
+        .input-area select {
+            flex-grow: 0;
+            width: 120px;
+            flex-shrink: 0;
+             padding: 12px 8px;
+        }
+        .input-area input[type="text"]#todoInput {
+             flex-grow: 2;
+             min-width: 150px;
+        }
+        .input-area input[type="text"]#categoryInput {
+             flex-grow: 1;
+             min-width: 100px;
+        }
+
+
+        .input-area button {
+            padding: 12px 20px;
+            background-color: var(--secondary-color); /* 민트색 버튼 */
+            color: #121212; /* 어두운 글자색 */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease; /* 호버/클릭 애니메이션 */
+            flex-shrink: 0;
+            font-size: 1em;
+            font-weight: 700; /* 글씨 두껍게 */
+            text-transform: uppercase; /* 대문자로 */
+        }
+        .input-area button:hover {
+            background-color: #00a896; /* 호버 시 살짝 진하게 */
+        }
+         .input-area button:active { /* 클릭 시 */
+             transform: scale(0.95); /* 살짝 작아지는 효과 */
+         }
+
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .controls .filter-sort-controls {
+             display: flex;
+             gap: 10px;
+             flex-wrap: wrap;
+        }
+         .controls select {
+             padding: 8px 10px;
+             border: 1px solid var(--input-border);
+             border-radius: 4px;
+             background-color: var(--input-bg);
+             color: var(--text-color);
+             font-size: 0.9em;
+             cursor: pointer;
+             flex-shrink: 0;
+             transition: border-color 0.3s ease, box-shadow 0.3s ease; /* 포커스 애니메이션 */
+         }
+          .controls select:focus {
+              outline: none;
+              border-color: var(--primary-color);
+              box-shadow: 0 0 8px var(--focus-glow);
+          }
+
+         .controls option {
+              background-color: var(--input-bg);
+              color: var(--text-color);
+         }
+
+        .controls button {
+             padding: 8px 15px;
+             background-color: var(--delete-color);
+             color: white;
+             border: none;
+             border-radius: 4px;
+             cursor: pointer;
+             transition: background-color 0.3s ease, transform 0.1s ease; /* 호버/클릭 애니메이션 */
+             font-size: 0.9em;
+        }
+        .controls button:hover {
+            background-color: #c03c51; /* 호버 시 살짝 진하게 */
+        }
+        .controls button:active { /* 클릭 시 */
+             transform: scale(0.95); /* 살짝 작아지는 효과 */
+         }
+
+        .counts span {
+            margin-right: 15px;
+            font-size: 0.95em;
+            color: var(--light-text);
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+        .todo-list li {
+            background-color: var(--item-bg);
+            border: 1px solid var(--border-color); /* 보더 좀 얇게 */
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            word-break: break-word;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity var(--animation-duration) ease, margin-bottom var(--animation-duration) ease; /* 애니메이션 추가 */
+            position: relative;
+             opacity: 1; /* 기본 투명도 */
+             transform: translateY(0); /* 기본 위치 */
+        }
+         /* 중요도별 왼쪽 보더 색상 */
+         .todo-list li.priority-important { border-left: 5px solid var(--priority-important-color); padding-left: 10px;}
+         .todo-list li.priority-high { border-left: 5px solid var(--priority-high-color); padding-left: 10px;}
+         .todo-list li.priority-medium { border-left: 5px solid var(--priority-medium-color); padding-left: 10px;}
+         .todo-list li.priority-low { border-left: 5px solid var(--priority-low-color); padding-left: 10px;}
+        /* 기본 보더 왼쪽도 두께 맞추기 */
+         .todo-list li:not([class*="priority-"]) { border-left: 5px solid transparent; padding-left: 10px;}
+
+
+         .todo-list li:hover {
+             transform: translateY(-5px); /* 호버 시 더 크게 뜨는 효과 */
+             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); /* 그림자 더 진하게 */
+             border-color: var(--border-color); /* 호버 시 보더 유지 */
+             border-left-color: inherit; /* 왼쪽 보더 색은 그대로 상속 */
+         }
+
+         /* 항목 추가 시 애니메이션 */
+         .todo-list li.adding {
+              opacity: 0;
+              transform: translateY(20px);
+         }
+          .todo-list li:not(.adding) {
+               opacity: 1;
+               transform: translateY(0);
+          }
+
+         /* 항목 삭제 시 애니메이션 (JS에서 클래스 추가 필요) */
+         .todo-list li.removing {
+             opacity: 0;
+             transform: translateX(50px); /* 옆으로 사라지는 효과 */
+             margin-bottom: -50px; /* 사라지면서 다른 요소들이 자연스럽게 올라오도록 */
+         }
+
+
+        .todo-list li .todo-details {
+             display: flex;
+             flex-direction: column;
+             flex-grow: 1;
+             min-width: 150px;
+             gap: 5px;
+        }
+
+         .todo-list li .todo-details .due-info {
+             font-size: 0.85em;
+             color: var(--light-text);
+             font-weight: 500;
+             display: flex;
+             gap: 8px;
+         }
+
+        .todo-list li .todo-details .priority-category-info {
+            font-size: 0.85em;
+            font-weight: 500;
+            display: flex;
+            gap: 8px;
+             flex-wrap: wrap;
+        }
+         .todo-list li .todo-details .priority-category-info .priority-label {
+             color: var(--priority-medium-color);
+         }
+         .todo-list li.priority-important .todo-details .priority-category-info .priority-label {
+             color: var(--priority-important-color);
+             font-weight: 700;
+         }
+          .todo-list li.priority-high .todo-details .priority-category-info .priority-label { color: var(--priority-high-color); }
+          .todo-list li.priority-medium .todo-details .priority-category-info .priority-label { color: var(--priority-medium-color); }
+          .todo-list li.priority-low .todo-details .priority-category-info .priority-label { color: var(--priority-low-color); }
+
+
+        .todo-list li .todo-details .category-label {
+             color: var(--light-text);
+             font-style: italic;
+        }
+
+
+        .todo-list li .todo-text {
+            flex-grow: 1;
+            font-size: 1em;
+            color: var(--text-color);
+            font-weight: 500;
+             cursor: pointer;
+             transition: color var(--animation-duration) ease, text-decoration var(--animation-duration) ease; /* 완료 애니메이션 */
+        }
+
+        /* 완료된 할 일 스타일 */
+        .todo-list li.completed {
+            background-color: #3a3a3a;
+            border-color: #5a5a5a;
+        }
+        .todo-list li.completed .todo-details .due-info,
+        .todo-list li.completed .todo-details .priority-category-info,
+        .todo-list li.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--completed-text);
+            font-weight: 400;
+        }
+        /* 완료되어도 왼쪽 보더 색은 유지 */
+         .todo-list li.completed.priority-important { border-left-color: var(--priority-important-color); }
+         .todo-list li.completed.priority-high { border-left-color: var(--priority-high-color); }
+         .todo-list li.completed.priority-medium { border-left-color: var(--priority-medium-color); }
+         .todo-list li.completed.priority-low { border-left-color: var(--priority-low-color); }
+
+
+        .todo-list li .actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .todo-list li .actions button {
+            background-color: transparent;
+            color: var(--edit-color);
+            border: none;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.1s ease;
+            font-size: 1.1em;
+            line-height: 1;
+        }
+        .todo-list li .actions button:hover {
+            color: var(--edit-hover);
+             background-color: transparent;
+        }
+         .todo-list li .actions button:active {
+             transform: scale(0.9);
+         }
+        .todo-list li .actions button.delete-btn {
+            color: var(--delete-color);
+        }
+        .todo-list li .actions button.delete-btn:hover {
+            color: var(--delete-hover);
+        }
+
+        .edit-area {
+            display: flex;
+            flex-grow: 1;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            min-width: 200px;
+        }
+        .edit-area .edit-input[type="text"],
+        .edit-area .edit-input[type="date"],
+        .edit-area .edit-input[type="time"],
+        .edit-area .edit-select {
+            flex-grow: 1;
+            padding: 6px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            font-size: 1em;
+            min-width: 60px;
+            box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+         .edit-area .edit-input[type="text"]:focus,
+         .edit-area .edit-input[type="date"]:focus,
+         .edit-area .edit-input[type="time"]:focus,
+         .edit-area .edit-select:focus {
+             outline: none;
+             border-color: var(--primary-color);
+             box-shadow: 0 0 8px var(--focus-glow);
+         }
+
+         .edit-area .edit-input[type="time"] {
+             width: 90px;
+             flex-grow: 0;
+             flex-shrink: 0;
+         }
+         .edit-area .edit-input[type="date"] {
+             width: 120px;
+             flex-grow: 0;
+             flex-shrink: 0;
+         }
+         .edit-area .edit-select {
+             width: 100px;
+             flex-grow: 0;
+             flex-shrink: 0;
+             padding: 6px 4px;
+         }
+         .edit-area .edit-input[type="text"]:first-child {
+             flex-grow: 2;
+             min-width: 120px;
+         }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MY TO-DO LIST</h1>
+
+        <div class="input-area">
+            <input type="text" id="todoInput" placeholder="새로운 할 일 추가" onkeypress="handleKeyPress(event)">
+            <input type="date" id="dateInput">
+            <input type="time" id="timeInput">
+            <select id="priorityInput">
+                <option value="">중요도 선택</option>
+                <option value="Low">낮음</option>
+                <option value="Medium">보통</option>
+                <option value="High">높음</option>
+                <option value="Important">🚨 중요</option>
+            </select>
+            <input type="text" id="categoryInput" placeholder="#카테고리">
+            <button onclick="addTodo()">추가</button>
+        </div>
+
+        <div class="controls">
+            <div class="counts">
+                <span id="totalCount">총 할 일: 0</span>
+                <span id="completedCount">완료: 0</span>
+            </div>
+            <div class="filter-sort-controls">
+                 <select id="sortSelect" onchange="renderTodos()">
+                     <option value="addedDesc">최신순</option>
+                     <option value="dateAsc">마감일 빠른순</option>
+                     <option value="dateDesc">마감일 늦은순</option> <!-- '마감일 늦은순' 추가 -->
+                     <option value="priorityDesc">중요도 높은순</option>
+                 </select>
+                  <select id="filterSelect" onchange="renderTodos()">
+                     <option value="all">전체 보기</option>
+                     <option value="incomplete">미완료만 보기</option>
+                     <option value="completed">완료만 보기</option>
+                 </select>
+            </div>
+            <button onclick="clearCompleted()">완료된 할 일 지우기</button>
+        </div>
+
+
+        <ul id="todoList" class="todo-list">
+            <!-- 할 일 항목들이 여기에 추가될 거예요 -->
+        </ul>
+    </div>
+
+    <script>
+        let todos = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTodos();
+            renderTodos(); // 로드 후 바로 화면에 그리기
+            updateCounts();
+        });
+
+        function addTodo() {
+            const todoInput = document.getElementById('todoInput');
+            const dateInput = document.getElementById('dateInput'); // 날짜 입력 가져오기
+            const timeInput = document.getElementById('timeInput');
+            const priorityInput = document.getElementById('priorityInput'); // 중요도 선택 가져오기
+            const categoryInput = document.getElementById('categoryInput'); // 카테고리 입력 가져오기
+
+            const todoText = todoInput.value.trim();
+            const todoDate = dateInput.value;
+            const todoTime = timeInput.value;
+            const todoPriority = priorityInput.value || 'Low'; // 선택 안 하면 기본 'Low'
+            const todoCategory = categoryInput.value.trim();
+
+
+            if (todoText === "") {
+                alert("할 일을 입력해주세요!");
+                return;
+            }
+
+            const newTodo = {
+                id: Date.now(), // 고유 ID (현재 시간)
+                text: todoText,
+                date: todoDate, // 날짜 정보 추가
+                time: todoTime, // 시간 정보 추가
+                priority: todoPriority, // 중요도 정보 추가
+                category: todoCategory, // 카테고리 정보 추가
+                completed: false // 완료 상태
+            };
+
+            todos.push(newTodo);
+
+            // 입력 필드 초기화
+            todoInput.value = "";
+            dateInput.value = "";
+            timeInput.value = "";
+            priorityInput.value = ""; // 중요도 초기화
+            categoryInput.value = ""; // 카테고리 초기화
+
+
+            renderTodos(); // 목록 다시 그리기
+            saveTodos(); // 저장
+            updateCounts(); // 개수 업데이트
+
+             // 새로 추가된 항목에 애니메이션 클래스 추가 (렌더링 후 바로)
+            // 요거는 renderTodos 안에서 처리하는 게 더 자연스러울 수 있음.
+            // renderTodos 함수 내에서 새로 생성된 li에 'adding' 클래스 추가 후 잠시 뒤 제거 방식 사용
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTodo();
+            }
+        }
+
+        // 할 일 목록 화면에 그리기 (정렬 및 필터링, 애니메이션 포함)
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            // 기존 항목들의 상태 (완료, 수정 중 등)를 유지하기 어렵기 때문에
+            // 여기서는 간단히 목록을 비우고 다시 그리는 방식을 사용합니다.
+            // 애니메이션은 추가될 때와 완료 상태 변경 시에만 적용됩니다.
+            // 삭제 애니메이션은 removeTodo 함수에서 처리합니다.
+             const existingItems = todoList.querySelectorAll('li'); // 기존 항목들 가져오기
+
+            const sortValue = document.getElementById('sortSelect').value;
+            const filterValue = document.getElementById('filterSelect').value;
+
+            let filteredTodos = [...todos]; // 원본 배열 복사해서 필터링/정렬
+
+            // 필터링
+            if (filterValue === 'incomplete') {
+                filteredTodos = filteredTodos.filter(todo => !todo.completed);
+            } else if (filterValue === 'completed') {
+                filteredTodos = filteredTodos.filter(todo => todo.completed);
+            }
+             // 카테고리 필터 등은 여기에 추가 가능 (예: filter(todo => todo.category === '공부'))
+
+            // 정렬
+            filteredTodos.sort((a, b) => {
+                if (sortValue === 'addedDesc') { // 최신순 (ID 기준)
+                    return b.id - a.id;
+                } else if (sortValue === 'dateAsc') { // 마감일 빠른순 (오래된 순서)
+                    const dateA = a.date || '9999-12-31';
+                    const dateB = b.date || '9999-12-31';
+                    const timeA = a.time || '23:59';
+                    const timeB = b.time || '23:59';
+
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
+                    if (timeA !== timeB) return timeA.localeCompare(timeB);
+                    return b.id - a.id;
+                } else if (sortValue === 'dateDesc') { // 마감일 늦은순 (새로운 순서) - 이 부분이 수정됨!
+                    const dateA = a.date || '0000-01-01';
+                    const dateB = b.date || '0000-01-01';
+                    const timeA = a.time || '00:00';
+                    const timeB = b.time || '00:00';
+
+                     if (dateB !== dateA) return dateB.localeCompare(dateA);
+                     if (timeB !== timeA) return timeB.localeCompare(timeA);
+                    return b.id - a.id;
+                }
+                else if (sortValue === 'priorityDesc') { // 중요도 높은순
+                    const priorityOrder = { 'Important': 4, 'High': 3, 'Medium': 2, 'Low': 1, '': 0 };
+                    const priorityA = priorityOrder[a.priority] || 0;
+                    const priorityB = priorityOrder[b.priority] || 0;
+
+                    if (priorityB !== priorityA) return priorityB - priorityA;
+                    return b.id - a.id;
+                }
+                return b.id - a.id; // 기본 최신순
+            });
+
+            todoList.innerHTML = ''; // 기존 목록 비우기 (애니메이션을 위해 삭제 항목은 별도 처리)
+
+
+            filteredTodos.forEach(todo => {
+                 const listItem = document.createElement('li');
+                 listItem.dataset.id = todo.id;
+
+                 // 항목 추가 시 애니메이션 적용
+                 listItem.classList.add('adding'); // 초기에 adding 클래스 추가
+
+                 // 중요도 클래스 및 완료 상태 클래스 추가
+                 listItem.classList.add(`priority-${todo.priority ? todo.priority.toLowerCase() : 'none'}`);
+                 if (todo.completed) {
+                     listItem.classList.add('completed');
+                 }
+
+                 const todoDetailsDiv = document.createElement('div');
+                 todoDetailsDiv.classList.add('todo-details');
+
+                  const dueInfoDiv = document.createElement('div');
+                  dueInfoDiv.classList.add('due-info');
+                   if(todo.date) {
+                      const dateSpan = document.createElement('span');
+                      dateSpan.classList.add('due-date');
+                      dateSpan.textContent = todo.date.replace(/-/g, '.');
+                      dueInfoDiv.appendChild(dateSpan);
+                   }
+                  if(todo.time) {
+                     const timeSpan = document.createElement('span');
+                     timeSpan.classList.add('due-time');
+                     timeSpan.textContent = todo.time;
+                     dueInfoDiv.appendChild(timeSpan);
+                  }
+                 if (dueInfoDiv.hasChildNodes()) {
+                      todoDetailsDiv.appendChild(dueInfoDiv);
+                 }
+
+
+                  const metaInfoDiv = document.createElement('div');
+                  metaInfoDiv.classList.add('priority-category-info');
+                   if(todo.priority) {
+                      const prioritySpan = document.createElement('span');
+                      prioritySpan.classList.add('priority-label');
+                      let priorityText = todo.priority;
+                      if (todo.priority === 'Important') priorityText = '🚨 중요';
+                      else if (todo.priority === 'High') priorityText = '🔺 높음';
+                      else if (todo.priority === 'Medium') priorityText = '🔹 보통';
+                      else if (todo.priority === 'Low') priorityText = '🔻 낮음';
+                      prioritySpan.textContent = priorityText;
+                      metaInfoDiv.appendChild(prioritySpan);
+                   }
+                   if(todo.category) {
+                      const categorySpan = document.createElement('span');
+                      categorySpan.classList.add('category-label');
+                      categorySpan.textContent = `#${todo.category}`;
+                      metaInfoDiv.appendChild(categorySpan);
+                   }
+                  if (metaInfoDiv.hasChildNodes()) {
+                      todoDetailsDiv.appendChild(metaInfoDiv);
+                  }
+
+
+                 const todoTextSpan = document.createElement('span');
+                 todoTextSpan.classList.add('todo-text');
+                 todoTextSpan.textContent = todo.text;
+                 todoTextSpan.onclick = () => toggleComplete(todo.id);
+                 todoDetailsDiv.appendChild(todoTextSpan);
+
+
+                 const actionsDiv = document.createElement('div');
+                 actionsDiv.classList.add('actions');
+
+                 // 아이콘 버튼으로 변경
+                 const editButton = document.createElement('button');
+                 editButton.classList.add('edit-btn'); // 수정 버튼 클래스 추가
+                 editButton.innerHTML = '<i class="fas fa-edit"></i>'; // 수정 아이콘
+                 editButton.onclick = () => editTodo(todo.id);
+
+                 const deleteButton = document.createElement('button');
+                 deleteButton.classList.add('delete-btn');
+                 deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>'; // 삭제 아이콘
+                 deleteButton.onclick = () => removeTodo(todo.id);
+
+                 actionsDiv.appendChild(editButton);
+                 actionsDiv.appendChild(deleteButton);
+
+                 listItem.appendChild(todoDetailsDiv);
+                 listItem.appendChild(actionsDiv);
+
+
+                 todoList.appendChild(listItem);
+
+                 // DOM에 추가된 후 애니메이션 클래스 제거하여 트랜지션 발생
+                 requestAnimationFrame(() => {
+                    listItem.classList.remove('adding');
+                 });
+            });
+        }
+
+        function removeTodo(id) {
+            const listItem = document.querySelector(`li[data-id='${id}']`);
+            if (listItem) {
+                // 삭제 애니메이션 클래스 추가
+                listItem.classList.add('removing');
+
+                // 애니메이션 종료 후 실제 DOM 요소 삭제 및 데이터 업데이트
+                listItem.addEventListener('transitionend', () => {
+                    // transitionend 이벤트 리스너가 여러 번 호출될 수 있으므로 한 번만 실행되게 처리
+                    if (listItem.parentElement) { // 부모 요소가 있는지 다시 확인
+                         listItem.remove(); // DOM에서 요소 삭제
+                         todos = todos.filter(todo => todo.id !== id); // 배열에서도 삭제
+                         saveTodos();
+                         updateCounts();
+                         // renderTodos(); // 삭제 후에는 전체를 다시 그릴 필요 없음 (CSS로 처리되므로)
+                    }
+                }, { once: true }); // 이벤트 리스너 한 번만 실행되도록 옵션 추가
+
+                // 만약 transitionend 이벤트가 발생하지 않을 경우를 대비 (fallback)
+                 // 짧은 애니메이션의 경우 이벤트가 누락될 수 있음.
+                 // 여기서는 CSS transition duration과 맞추는 것이 좋음.
+                 const duration = parseFloat(getComputedStyle(listItem).transitionDuration) * 1000;
+                 setTimeout(() => {
+                    // transitionend가 실행되지 않았으면 여기서 삭제
+                    if (listItem.parentElement) {
+                        listItem.remove();
+                        todos = todos.filter(todo => todo.id !== id);
+                        saveTodos();
+                        updateCounts();
+                    }
+                 }, duration + 50); // 애니메이션 시간보다 약간 더 길게 설정
+
+            } else {
+                 // listItem이 없는 경우 (이미 삭제되었거나 오류)
+                 todos = todos.filter(todo => todo.id !== id);
+                 saveTodos();
+                 updateCounts();
+                 renderTodos(); // 혹시 모르니 목록 전체 다시 그리기
+            }
+        }
+
+        function toggleComplete(id) {
+            const todo = todos.find(todo => todo.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                // renderTodos(); // 전체를 다시 그리지 않고 해당 항목만 클래스 토글
+                const listItem = document.querySelector(`li[data-id='${id}']`);
+                if (listItem) {
+                     listItem.classList.toggle('completed', todo.completed); // completed 클래스 토글
+                }
+                saveTodos();
+                updateCounts();
+            }
+        }
+
+        // 할 일 수정 함수
+        function editTodo(id) {
+            const listItem = document.querySelector(`li[data-id='${id}']`);
+            const todoDetailsDiv = listItem.querySelector('.todo-details');
+            const actionsDiv = listItem.querySelector('.actions');
+
+            // 이미 수정 중인지 확인
+            if (listItem.querySelector('.edit-area')) {
+                return;
+            }
+
+            const todo = todos.find(todo => todo.id === id);
+            if (!todo) return;
+
+            // 기존 버튼 숨기기 (CSS로 처리해도 됨)
+            actionsDiv.style.display = 'none';
+
+            const editArea = document.createElement('div');
+            editArea.classList.add('edit-area');
+
+            const editTextInput = document.createElement('input');
+            editTextInput.type = 'text';
+            editTextInput.className = 'edit-input';
+            editTextInput.value = todo.text;
+            editTextInput.placeholder = "할 일 내용";
+
+            const editDateInput = document.createElement('input');
+            editDateInput.type = 'date';
+            editDateInput.className = 'edit-input';
+            editDateInput.value = todo.date;
+
+            const editTimeInput = document.createElement('input');
+            editTimeInput.type = 'time';
+            editTimeInput.className = 'edit-input';
+            editTimeInput.value = todo.time;
+
+            const editPrioritySelect = document.createElement('select');
+             editPrioritySelect.className = 'edit-select';
+             const priorities = [{value: '', text: '중요도 선택'}, {value: 'Low', text: '낮음'}, {value: 'Medium', text: '보통'}, {value: 'High', text: '높음'}, {value: 'Important', text: '🚨 중요'}];
+             priorities.forEach(p => {
+                 const option = document.createElement('option');
+                 option.value = p.value;
+                 option.textContent = p.text;
+                 if (todo.priority === p.value) {
+                     option.selected = true;
+                 }
+                 editPrioritySelect.appendChild(option);
+             });
+
+            const editCategoryInput = document.createElement('input');
+            editCategoryInput.type = 'text';
+            editCategoryInput.className = 'edit-input';
+            editCategoryInput.value = todo.category;
+            editCategoryInput.placeholder = "#카테고리";
+
+
+            editArea.appendChild(editTextInput);
+            editArea.appendChild(editDateInput);
+            editArea.appendChild(editTimeInput);
+            editArea.appendChild(editPrioritySelect);
+            editArea.appendChild(editCategoryInput);
+
+            // 저장 및 취소 버튼 추가 (수정 모드에서만 보임)
+             const saveButton = document.createElement('button');
+             saveButton.textContent = '저장';
+             // 아이콘으로 변경하고 싶다면
+             // saveButton.innerHTML = '<i class="fas fa-save"></i>';
+             saveButton.classList.add('save-edit-btn'); // 저장 버튼 클래스 추가
+             // 스타일은 CSS로 관리하는 게 좋지만, 임시로 여기서 지정 가능
+             // saveButton.style.backgroundColor = 'var(--secondary-color)'; // 예시 색상
+             // saveButton.style.color = '#121212'; // 예시 색상
+             saveButton.onclick = () => saveEditedTodo(id, editTextInput.value, editDateInput.value, editTimeInput.value, editPrioritySelect.value, editCategoryInput.value);
+
+
+             const cancelButton = document.createElement('button');
+             cancelButton.textContent = '취소';
+             // 아이콘으로 변경하고 싶다면
+             // cancelButton.innerHTML = '<i class="fas fa-times"></i>';
+             cancelButton.classList.add('cancel-edit-btn'); // 취소 버튼 클래스 추가
+              // 스타일은 CSS로 관리하는 게 좋지만, 임시로 여기서 지정 가능
+             // cancelButton.style.backgroundColor = '#6c757d'; // 예시 색상
+             // cancelButton.style.color = 'white'; // 예시 색상
+
+             cancelButton.onclick = () => {
+                 renderTodos(); // 목록 다시 그려서 수정 모드 해제 및 원래 버튼 보이게
+                 // actionsDiv.style.display = 'flex'; // renderTodos가 알아서 처리함
+             };
+
+            const editActionsDiv = document.createElement('div');
+            editActionsDiv.classList.add('actions'); // 같은 actions 스타일 사용
+             editActionsDiv.appendChild(saveButton);
+             editActionsDiv.appendChild(cancelButton);
+
+            todoDetailsDiv.style.display = 'none';
+            listItem.insertBefore(editArea, actionsDiv); // actions 앞에 수정 영역 삽입
+            listItem.insertBefore(editActionsDiv, actionsDiv); // actions 앞에 저장/취소 버튼 영역 삽입
+             actionsDiv.style.display = 'none'; // 원래 수정/삭제 버튼 영역 숨김
+
+
+            editTextInput.focus();
+
+            const inputsInEditArea = editArea.querySelectorAll('input, select');
+             inputsInEditArea.forEach(input => {
+                 input.onkeypress = (event) => {
+                    if (event.key === 'Enter') {
+                        // 모든 입력창의 현재 값을 가져와서 저장 함수 호출
+                        saveEditedTodo(
+                            id,
+                            editTextInput.value,
+                            editDateInput.value,
+                            editTimeInput.value,
+                            editPrioritySelect.value,
+                            editCategoryInput.value
+                         );
+                    }
+                 };
+             });
+        }
+
+        function saveEditedTodo(id, newText, newDate, newTime, newPriority, newCategory) {
+             const newTrimmedText = newText.trim();
+
+            if (newTrimmedText === "") {
+                alert("할 일 내용을 비워둘 수 없습니다!");
+                renderTodos(); // 입력 취소 시 목록 다시 그려서 수정 모드 해제
+                return;
+            }
+
+            const todo = todos.find(todo => todo.id === id);
+            if (todo) {
+                todo.text = newTrimmedText;
+                todo.date = newDate;
+                todo.time = newTime;
+                todo.priority = newPriority || 'Low';
+                todo.category = newCategory.trim();
+
+
+                renderTodos(); // 목록 다시 그리기 (수정 모드 해제 포함)
+                saveTodos();
+                 updateCounts();
+            }
+        }
+
+        function clearCompleted() {
+            if(confirm("완료된 할 일을 모두 지울까요?")) {
+                 // 삭제 애니메이션을 적용하려면 filter 대신 하나씩 removeTodo 호출 필요
+                 // 하지만 완료된 항목이 많을 수 있으므로 여기서는 바로 데이터 삭제 후 렌더링
+                 const completedTodos = todos.filter(todo => todo.completed);
+                 if (completedTodos.length > 0) {
+                      todos = todos.filter(todo => !todo.completed);
+                      saveTodos();
+                      updateCounts();
+                      renderTodos(); // 전체 목록 다시 그려서 완료 항목 제거
+                 } else {
+                     alert("완료된 할 일이 없습니다.");
+                 }
+            }
+        }
+
+        function updateCounts() {
+            const totalCountSpan = document.getElementById('totalCount');
+            const completedCountSpan = document.getElementById('completedCount');
+
+            const total = todos.length;
+            const completed = todos.filter(todo => todo.completed).length;
+
+            totalCountSpan.textContent = `총 할 일: ${total}`;
+            completedCountSpan.textContent = `완료: ${completed}`;
+        }
+
+        function saveTodos() {
+            localStorage.setItem('myTodos', JSON.stringify(todos));
+        }
+
+        function loadTodos() {
+            const savedTodos = localStorage.getItem('myTodos');
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+                todos = todos.map(todo => ({
+                    ...todo,
+                    date: todo.date || '',
+                    time: todo.time || '',
+                    priority: todo.priority || 'Low',
+                    category: todo.category || '',
+                    // completed: todo.completed || false // completed 필드 없을 경우 대비 (이전 코드에서 추가됨)
+                }));
+            } else {
+                todos = [];
+            }
+        }
+
+    </script>
+</body>
+</html>
